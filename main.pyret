@@ -1,0 +1,69 @@
+maze_map = [list:
+	"###########",
+	"#         #",
+	"# # ##### #",
+	"# #   # # #",
+	"# ## ## # #",
+	"# #  #  # #",
+	"# # ##    #",
+	"# #  #### #",
+	"# #  #  # #",
+	"# ##### # #",
+	"#S#X      #",
+	"###########"
+]
+
+###### DATEN ######
+struct Maze:
+	map :: List<List<MapBlock>>
+	user :: User
+end
+
+
+struct User:
+  location :: { x :: Number, y :: Number }
+end
+
+data MapBlock:
+	| wall
+	| space
+	| start_point(x, y)
+	| end_point(x, y)
+end
+
+###### INIT ######
+
+# Bau den Maze
+_x = [list; ]
+
+_i = 0
+_j = 0
+for each(maze_line from maze_map):
+	_x.push([list;])
+	for each(block from maze_line):
+		block = space # Default ist es Space
+		if block == "#":
+			block = wall
+		end
+		if block == "S":
+			block = start_point(_j, _i)
+		end
+		if block == "X":
+			block = end_point(_j, _i)
+		end
+		if block != " ":
+			raise("invalid char found in map: "+block)
+		end
+		_x.get(_i).push(block)
+		_j := _j + 1
+	end
+	_i := _i + 1
+
+	_j := 0
+end
+_i := 0
+
+
+fun draw_maze_map()
+
+
