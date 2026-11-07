@@ -1,9 +1,7 @@
 use context dcic2024
 include tables
 
-data Player:
-    make_player(position :: Point, angle :: Number, fov :: Number)
-end
+
 constants  = " #SX"
 FIELD_SIZE = 20
 
@@ -42,11 +40,18 @@ fun map-block-as-index(char :: String) -> Number:
   end
 end
 
-
-#map_arr = for map-block-as-index(string-char-at( "#SX##", element from range(0,3))): 
-#  element+1
-#end
-
+fun set-angle(p, angle :: Number):
+  p.angle.set-now(0, angle) 
+end
+fun set-position-x(p, x :: Number):
+  p.position.set-now(0, point-xy(x, p.position.get-now(0).x)) 
+end
+fun set-position-y(p, y :: Number):
+  p.position.set-now(0, point-xy(p.position.get-now(0).x, y)) 
+end
+fun set-position(p, pos :: Point):
+  p.position.set-now(0, pos) 
+end
 
 
 fun fill-game(arr, map_arr, Width:: Number, Height:: Number) -> Point:
@@ -78,10 +83,13 @@ end
 
 #var player =  make_player( point-xy(0,0), 0, 90)
 
+var player = {
+  position: [array: point-xy(0,0)],
+  angle:    [array: 0],
+  fov: 90
+}
 
 game_field = array-of(array-of(0, WIDTH), (HEIGHT))
 init-game-array(game_field, WIDTH, HEIGHT)
 start_pos = fill-game(game_field, maze_map, WIDTH, HEIGHT)
 
-#test
-var player = make_player(start_pos, 0, 90)
