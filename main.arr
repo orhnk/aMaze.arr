@@ -83,5 +83,5 @@ game_field = array-of(array-of(0, WIDTH), (HEIGHT))
 init-game-array(game_field, WIDTH, HEIGHT)
 start_pos = fill-game(game_field, maze_map, WIDTH, HEIGHT)
 
-
+#test
 var player = make_player(start_pos, 0, 90)
