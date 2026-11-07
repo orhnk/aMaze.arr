@@ -44,7 +44,7 @@ fun set-angle(p, angle :: Number):
   p.angle.set-now(0, angle) 
 end
 fun set-position-x(p, x :: Number):
-  p.position.set-now(0, point-xy(x, p.position.get-now(0).x)) 
+  p.position.set-now(0, point-xy(x, p.position.get-now(0).y)) 
 end
 fun set-position-y(p, y :: Number):
   p.position.set-now(0, point-xy(p.position.get-now(0).x, y)) 
@@ -52,6 +52,20 @@ end
 fun set-position(p, pos :: Point):
   p.position.set-now(0, pos) 
 end
+
+fun get-angle(p) -> Number:
+  p.angle.get-now(0)
+end
+fun get-position-x(p) -> Number:
+  p.position.get-now(0).x
+end
+fun get-position-y(p) -> Number:
+  p.position.get-now(0).y 
+end
+fun get-position(p) -> Point:
+  p.position.get-now(0) 
+end
+
 
 
 fun fill-game(arr, map_arr, Width:: Number, Height:: Number) -> Point:
