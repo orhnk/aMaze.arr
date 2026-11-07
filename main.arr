@@ -1,10 +1,9 @@
 use context dcic2024
 include tables
+
 data Player:
-    player(x:: Number, y:: Number, angle:: Number, fov:: Number)
+    make_player(position :: Point, angle :: Number, fov :: Number)
 end
-
-
 constants  = " #SX"
 FIELD_SIZE = 20
 
@@ -50,24 +49,39 @@ end
 
 
 
-fun fill-game-array(arr, map_arr, Width:: Number, Height:: Number):
-
+fun fill-game(arr, map_arr, Width:: Number, Height:: Number) -> Point:
+  block:
+  var ret = point-xy(0,0)
   for each(i from range(0, Height)):
     for each(j from range(0, Width)):
+      block:
       strg  = map_arr.get-now(i)
       char = string-char-at(strg, j)
+      when string-equal("S", char):
+        ret := point-xy(j, i) 
+      end
+      
       arr.get-now(i).set-now(j, map-block-as-index(char))
+      end
     end
-  
   end
+  ret
 end
+end
+
 fun init-game-array(arr, Width:: Number, Height:: Number):
   for each(h from range(0, WIDTH)):
     arr.set-now(h, array-of(0, WIDTH))
   end
 end
 
+
+#var player =  make_player( point-xy(0,0), 0, 90)
+
+
 game_field = array-of(array-of(0, WIDTH), (HEIGHT))
 init-game-array(game_field, WIDTH, HEIGHT)
-fill-game-array(game_field, maze_map, WIDTH, HEIGHT)
+start_pos = fill-game(game_field, maze_map, WIDTH, HEIGHT)
 
+
+var player = make_player(start_pos, 0, 90)
