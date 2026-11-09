@@ -1,12 +1,11 @@
 use context dcic2024
-include tables
-
-
-constants  = " #SX"
-FIELD_SIZE = 20
-
 
 #const_str_dict = [mutable-string-dict: " ", 0, "#", 1, "S", 2, "X", 3]
+
+WALL = "#"
+START = "S"
+constants  = " #SX"
+FIELD_SIZE = 20
 
 
 
@@ -76,7 +75,7 @@ fun fill-game(arr, map_arr, Width:: Number, Height:: Number) -> Point:
       block:
       strg  = map_arr.get-now(i)
       char = string-char-at(strg, j)
-      when string-equal("S", char):
+          when string-equal(START, char):
         ret := point-xy(j, i) 
       end
       
@@ -107,17 +106,25 @@ game_field = array-of(array-of(0, WIDTH), (HEIGHT))
 init-game-array(game_field, WIDTH, HEIGHT)
 start_pos = fill-game(game_field, maze_map, WIDTH, HEIGHT)
 
+fun num-square(n :: Number) -> Number:
+  n * n
+end
 
-fun step_rays(angle :: Number, position :: Point, iteration :: Number) -> Array:
+fun get-distance(start_ :: Point, end_ :: Point) -> Number:
+  num-sqrt(num-square(start_.x - end_.x) + num-square(start_.y - end_.y))
+end
+
+
+fun step_rays(angle :: Number, position :: Point) -> Array:
   ret = game_field.get-now(position.y).get-now(position.x)
-  if ret == map-block-as-index(" "):
+  if ret <> map-block-as-index(WALL):
     increment-y = num-round(num-cos(angle * PI))
     increment-x = num-round(num-sin(angle * PI))
-    new_pos = point-xy(position.x + increment-x, position.y - increment-y)
+    new_pos = point-xy(position.x + increment-x, position.y - increment-y) #y points downward
     
-    step_rays(angle, new_pos, iteration + 1)
+    step_rays(angle, new_pos)
   else:
-    [array: ret, iteration, position.x, position.y]
+    [array: ret, point-xy(position.x, position.y)]
   end
 end
 
