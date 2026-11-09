@@ -13,12 +13,12 @@ FIELD_SIZE = 20
 maze_map = [array:
   "########",
   "#    X #",
-  "# ######",
+  "# XXXX##",
   "#      #",
   "#  # # #",
   "## ### #",
   "# ##   #",
-  "#S   ###",
+  "# S  ###",
   "########"
 ]
 
@@ -107,3 +107,21 @@ game_field = array-of(array-of(0, WIDTH), (HEIGHT))
 init-game-array(game_field, WIDTH, HEIGHT)
 start_pos = fill-game(game_field, maze_map, WIDTH, HEIGHT)
 
+
+fun step_rays(angle :: Number, position :: Point, iteration :: Number) -> Array:
+  ret = game_field.get-now(position.y).get-now(position.x)
+  if ret == map-block-as-index(" "):
+    increment-y = num-round(num-cos(angle * PI))
+    increment-x = num-round(num-sin(angle * PI))
+    new_pos = point-xy(position.x + increment-x, position.y - increment-y)
+    
+    step_rays(angle, new_pos, iteration + 1)
+  else:
+    [array: ret, iteration, position.x, position.y]
+  end
+end
+
+
+#fun draw_maze(p, maze:: Array) -> Image:
+  
+#end
