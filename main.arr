@@ -1,21 +1,34 @@
 use context dcic2024
+include reactors
 
-#const_str_dict = [mutable-string-dict: " ", 0, "#", 1, "S", 2, "X", 3]
 
 WALL = "#"
 START = "S"
 constants  = " #SX"
 FIELD_SIZE = 20
 
+SCREEN_WIDTH = 900
+SCREEN_HEIGHT = 600
 
+
+DIR_UP    = 0
+DIR_RIGHT = 90
+DIR_DOWN  = 180
+DIR_LEFT  = 270
+
+RAY_COUNT = 32
+RECT_HEIGHT = SCREEN_HEIGHT * 0.7
+
+
+debug_colors = [array: "gray", "blue", "orange", "red"]
 
 maze_map = [array:
   "########",
   "#    X #",
-  "# XXXX##",
+  "#    ###",
   "#      #",
   "#  # # #",
-  "## ### #",
+  "## #   #",
   "# ##   #",
   "# S  ###",
   "########"
@@ -94,13 +107,15 @@ fun init-game-array(arr, Width:: Number, Height:: Number):
 end
 
 
-#var player =  make_player( point-xy(0,0), 0, 90)
 
 var player = {
-  position: [array: point-xy(0,0)],
-  angle:    [array: 0],
+  position: [array: point-xy(5,3)],
+  angle:    [array: DIR_RIGHT],
   fov: 90
 }
+
+
+
 
 game_field = array-of(array-of(0, WIDTH), (HEIGHT))
 init-game-array(game_field, WIDTH, HEIGHT)
@@ -129,6 +144,70 @@ fun step_rays(angle :: Number, position :: Point) -> Array:
 end
 
 
-#fun draw_maze(p, maze:: Array) -> Image:
+
+fun num-degrees-radians(degrees :: Number) -> Number:
+  (degrees ) * (1 / 180)
+  #Usage: 
+  #UP:= 0
+  #RIGHT:=90
+  #DOWN:=180
+  #LEFT:=270
+end
+
+fun draw-wall(distance, color :: String) -> Image:
+  rectangle(SCREEN_WIDTH / RAY_COUNT,  RECT_HEIGHT * (1 / num-max(distance + 1, 1)), "solid" , color)
   
-#end
+  
+
+
+end
+  
+#for loops are for noobs
+
+fun iter(counter :: Number, max :: Number, return_, player_) -> Image:
+  
+  if counter >= max:
+    return_
+  else:
+    block:
+      
+      deg = ((get-angle(player_) - (player_.fov * 0.5)) + (counter / max))
+      res = step_rays(deg, get-position(player_)).get-now(1)
+      distance = get-distance(get-position(player_), res)
+      var ret = draw-wall(distance, "gray")
+      beside(ret, iter(counter + 1, max, ret, player))
+      
+    end
+  end
+end
+
+
+#TODO: handle input properly (wrap around array bounds)
+fun move-forward(x, key):
+  if string-equal(key, "up"):
+    block:
+  set-position-x(player, get-position-x(player) + 10)
+    x
+    end
+  else:
+    x
+  end
+end
+
+fun render(x):
+  var target = rectangle(SCREEN_WIDTH, SCREEN_HEIGHT, "solid", "black")
+  #draw-wall(target, 45, 2, player)
+  place-image(iter(0, RAY_COUNT, target, player),SCREEN_WIDTH * 0.5,SCREEN_HEIGHT * 0.5,target)
+end
+fun increment(x): x + 1 end
+main = reactor:
+  seconds-per-tick: 0.016,
+  title: "Count by 10",
+  on-tick: increment,
+    init: 0,
+  on-key: move-forward,
+  to-draw: render
+end
+
+
+ interact(main)
