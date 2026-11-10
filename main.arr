@@ -52,6 +52,10 @@ fun map-block-as-index(char :: String) -> Number:
   end
 end
 
+
+
+
+
 fun set-angle(p, angle :: Number):
   p.angle.set-now(0, angle) 
 end
@@ -62,7 +66,12 @@ fun set-position-y(p, y :: Number):
   p.position.set-now(0, point-xy(p.position.get-now(0).x, y)) 
 end
 fun set-position(p, pos :: Point):
-  p.position.set-now(0, pos) 
+  if (pos.x < (WIDTH - 1)) and (pos.x >= 0) and (pos.y >= 0) and (pos.y < (HEIGHT - 1)):
+    
+    p.position.set-now(0, pos) 
+  else:
+    nothing
+  end
 end
 
 fun get-angle(p) -> Number:
@@ -78,6 +87,38 @@ fun get-position(p) -> Point:
   p.position.get-now(0) 
 end
 
+
+
+fun increment-position-x(p, inc :: Number):
+  x = get-position-x(p)
+  if ((x + inc) <= (WIDTH - 1)) and ((x + inc) >= 0):
+    set-position-x(p, x + inc)
+  else:
+    nothing
+  end 
+end
+
+fun increment-position-y(p, inc :: Number):
+  y = get-position-x(p)
+  if ((y + inc) <= (HEIGHT - 1)) and ((y + inc) >= 0):
+    set-position-y(p, y + inc)
+  else:
+    nothing
+  end 
+end
+
+fun angled_increment-position(p, inc):
+  block:
+  increment-y = num-round(num-cos(get-angle(p) * PI))
+  increment-x = num-round(num-sin(get-angle(p) * PI))
+  increment-position-x(p, increment-x)
+  increment-position-y(p, increment-y)
+  end
+end
+fun increment-angle(p, inc :: Number):
+  angle = get-angle(p)
+  set-angle(p, angle + inc)
+end
 
 
 fun fill-game(arr, map_arr, Width:: Number, Height:: Number) -> Point:
@@ -131,7 +172,7 @@ end
 
 
 fun step_rays(angle :: Number, position :: Point) -> Array:
-  ret = game_field.get-now(position.y).get-now(position.x)
+  ret = game_field.get-now(num-round(position.y)).get-now(num-round(position.x))
   if ret <> map-block-as-index(WALL):
     increment-y = num-round(num-cos(angle * PI))
     increment-x = num-round(num-sin(angle * PI))
@@ -186,22 +227,22 @@ end
 fun move-forward(x, key):
   if string-equal(key, "up"):
     block:
-      set-position-x(player, get-position-x(player) - 1)
+      increment-position-x(player, -0.1)
       x
     end
   else if string-equal(key, "down"):
     block:
-      set-position-x(player, get-position-x(player) + 1)
+      increment-position-x(player, 0.1)
       x
     end
   else if string-equal(key, "left"):
     block:
-      set-angle(player, get-angle(player) - 0.1)
+      increment-angle(player, -0.1)
       x
     end
   else if string-equal(key, "right"):
     block:
-      set-angle(player, get-angle(player) + 0.1)
+      increment-angle(player, 0.1)
       x
     end
   else:
