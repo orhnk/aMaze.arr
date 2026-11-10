@@ -25,12 +25,12 @@ debug_colors = [array: "gray", "blue", "orange", "red"]
 maze_map = [array:
   "########",
   "#    X #",
-  "#    ###",
   "#      #",
-  "#  # # #",
-  "## #   #",
-  "# ###S #",
-  "#    ###",
+  "#   #  #",
+  "#  S   #",
+  "#      #",
+  "#      #",
+  "#      #",
   "########"
 ]
 
@@ -39,7 +39,14 @@ WIDTH  = string-length(maze_map.get-now(0))
 HEIGHT = array-length(maze_map)
 #WARNING: this assumes a rectangular map : )
 #this will definitely not bite in the future, especially because I don't implement any tests : >
-
+fun num-degrees-radians(degrees :: Number) -> Number:
+  (degrees ) * (1 / 180)
+  #Usage: 
+  #UP:= 0
+  #RIGHT:=90
+  #DOWN:=180
+  #LEFT:=270
+end
 fun map-block-as-index(char :: String) -> Number:
   if string-length(char) <> 1:
     raise("character length not 1!")
@@ -109,10 +116,10 @@ end
 
 fun angled_increment-position(p, inc :: Number):
   block:
-    increment-y = inc * num-round(num-cos(get-angle(p) * PI))
-    increment-x = inc * num-round(num-sin(get-angle(p) * PI))
-  increment-position-x(p, increment-x)
-  increment-position-y(p, increment-y)
+    increment-y = inc * (num-cos((num-degrees-radians(DIR_DOWN)) + (get-angle(p) * PI)))
+    increment-x = inc * (num-sin(get-angle(p) * PI))
+    increment-position-x(p, increment-x)
+    increment-position-y(p, increment-y)
   end
 end
 fun increment-angle(p, inc :: Number):
@@ -192,9 +199,9 @@ fun step_rays(angle :: Number, position :: Point) -> Array:
   
   ret = game_field.get-now(y).get-now(x)
   if ret <> map-block-as-index(WALL):
-    increment-y = num-round(num-cos(angle * PI))
-    increment-x = num-round(num-sin(angle * PI))
-    new_pos = point-xy(position.x + increment-x, position.y - increment-y) #y points downward
+    increment-y = (num-cos(angle * PI))
+    increment-x = (num-sin(angle * PI))
+      new_pos = point-xy(position.x + increment-x, position.y + increment-y) 
     
     step_rays(angle, new_pos)
   else:
@@ -205,14 +212,7 @@ end
 
 
 
-fun num-degrees-radians(degrees :: Number) -> Number:
-  (degrees ) * (1 / 180)
-  #Usage: 
-  #UP:= 0
-  #RIGHT:=90
-  #DOWN:=180
-  #LEFT:=270
-end
+
 
 fun draw-wall(distance, color :: String) -> Image:
   rectangle(SCREEN_WIDTH / RAY_COUNT,  RECT_HEIGHT * (1 / num-max(distance + 1, 1)), "solid" , color)
@@ -230,11 +230,20 @@ fun iter(counter :: Number, max :: Number, return_, player_) -> Image:
     return_
   else:
     block:
-      
+      rounded-pos = point-xy(num-round(get-position-x(player_)), num-round(get-position-y(player_)))
       deg = ((get-angle(player_) - (player_.fov * 0.5)) + (counter / max))
-      res = step_rays(deg, get-position(player_)).get-now(1)
-      distance = get-distance(get-position(player_), res)
-      var ret = draw-wall(distance, "gray")
+      res = step_rays(deg, rounded-pos).get-now(1)
+      scale_ = 1 + (num-abs(counter - (max * 0.5)) / (max * 100))
+      distance = (get-distance(get-position(player_), res)) * scale_
+      var ret = if distance > 5:
+        draw-wall(distance, "gray")
+      else if distance > 2.5:
+        draw-wall(distance, "blue")
+        else if distance > 1:
+        draw-wall(distance, "red")
+      else:
+        draw-wall(distance, "green")
+      end
       beside(ret, iter(counter + 1, max, ret, player))
       
     end
@@ -246,12 +255,12 @@ end
 fun move-forward(x, key):
   if string-equal(key, "up"):
     block:
-      angled_increment-position(player, -0.2)
+      angled_increment-position(player, 0.02)
       x
     end
   else if string-equal(key, "down"):
     block:
-      angled_increment-position(player, 0.2)
+      angled_increment-position(player, -0.02)
       x
     end
   else if string-equal(key, "left"):
