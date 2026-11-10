@@ -29,8 +29,8 @@ maze_map = [array:
   "#      #",
   "#  # # #",
   "## #   #",
-  "# ##   #",
-  "# S  ###",
+  "# ###S #",
+  "#    ###",
   "########"
 ]
 
@@ -107,10 +107,10 @@ fun increment-position-y(p, inc :: Number):
   end 
 end
 
-fun angled_increment-position(p, inc):
+fun angled_increment-position(p, inc :: Number):
   block:
-  increment-y = num-round(num-cos(get-angle(p) * PI))
-  increment-x = num-round(num-sin(get-angle(p) * PI))
+    increment-y = inc * num-round(num-cos(get-angle(p) * PI))
+    increment-x = inc * num-round(num-sin(get-angle(p) * PI))
   increment-position-x(p, increment-x)
   increment-position-y(p, increment-y)
   end
@@ -130,8 +130,8 @@ fun fill-game(arr, map_arr, Width:: Number, Height:: Number) -> Point:
       strg  = map_arr.get-now(i)
       char = string-char-at(strg, j)
           when string-equal(START, char):
-        ret := point-xy(j, i) 
-      end
+            ret := point-xy(j, i) 
+          end
       
       arr.get-now(i).set-now(j, map-block-as-index(char))
       end
@@ -161,6 +161,7 @@ var player = {
 game_field = array-of(array-of(0, WIDTH), (HEIGHT))
 init-game-array(game_field, WIDTH, HEIGHT)
 start_pos = fill-game(game_field, maze_map, WIDTH, HEIGHT)
+set-position(player, start_pos)
 
 fun num-square(n :: Number) -> Number:
   n * n
@@ -172,7 +173,24 @@ end
 
 
 fun step_rays(angle :: Number, position :: Point) -> Array:
-  ret = game_field.get-now(num-round(position.y)).get-now(num-round(position.x))
+  block:
+  var x = num-round(position.x)
+  var y = num-round(position.y)
+  
+    if x < 0:
+    x := 0
+  else if x > (WIDTH  - 1):
+    x := (WIDTH  - 1)
+    else: nothing
+  end
+  if y < 0:
+    y := 0
+  else if y > (HEIGHT  - 1):
+    y := (HEIGHT  - 1)
+    else: nothing
+  end
+  
+  ret = game_field.get-now(y).get-now(x)
   if ret <> map-block-as-index(WALL):
     increment-y = num-round(num-cos(angle * PI))
     increment-x = num-round(num-sin(angle * PI))
@@ -181,6 +199,7 @@ fun step_rays(angle :: Number, position :: Point) -> Array:
     step_rays(angle, new_pos)
   else:
     [array: ret, point-xy(position.x, position.y)]
+  end
   end
 end
 
@@ -227,12 +246,12 @@ end
 fun move-forward(x, key):
   if string-equal(key, "up"):
     block:
-      increment-position-x(player, -0.1)
+      angled_increment-position(player, -0.2)
       x
     end
   else if string-equal(key, "down"):
     block:
-      increment-position-x(player, 0.1)
+      angled_increment-position(player, 0.2)
       x
     end
   else if string-equal(key, "left"):
