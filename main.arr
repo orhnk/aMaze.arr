@@ -186,20 +186,39 @@ end
 fun move-forward(x, key):
   if string-equal(key, "up"):
     block:
-  set-position-x(player, get-position-x(player) + 10)
-    x
+      set-position-x(player, get-position-x(player) - 1)
+      x
+    end
+  else if string-equal(key, "down"):
+    block:
+      set-position-x(player, get-position-x(player) + 1)
+      x
+    end
+  else if string-equal(key, "left"):
+    block:
+      set-angle(player, get-angle(player) - 0.1)
+      x
+    end
+  else if string-equal(key, "right"):
+    block:
+      set-angle(player, get-angle(player) + 0.1)
+      x
     end
   else:
+    
     x
   end
 end
 
 fun render(x):
   var target = rectangle(SCREEN_WIDTH, SCREEN_HEIGHT, "solid", "black")
-  #draw-wall(target, 45, 2, player)
+  
   place-image(iter(0, RAY_COUNT, target, player),SCREEN_WIDTH * 0.5,SCREEN_HEIGHT * 0.5,target)
 end
 fun increment(x): x + 1 end
+
+#TODO: add DT and make the array accesses check and clamp bounds, make the position floating point but round it on array access for the map (movement almost works)
+
 main = reactor:
   seconds-per-tick: 0.016,
   title: "Count by 10",
