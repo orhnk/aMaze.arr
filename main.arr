@@ -149,8 +149,8 @@ end
 end
 
 fun init-game-array(arr, Width:: Number, Height:: Number):
-  for each(h from range(0, WIDTH)):
-    arr.set-now(h, array-of(0, WIDTH))
+  for each(h from range(0, Height)):
+    arr.set-now(h, array-of(0, Width))
   end
 end
 
@@ -159,7 +159,7 @@ end
 var player = {
   position: [array: point-xy(5,3)],
   angle:    [array: DIR_RIGHT],
-  fov: 60
+  fov: 90
 }
 
 
@@ -231,7 +231,7 @@ fun iter(counter :: Number, max :: Number, return_, player_) -> Image:
   else:
     block:
       rounded-pos = point-xy(num-round(get-position-x(player_)), num-round(get-position-y(player_)))
-      deg = (get-angle(player_) + num-degrees-radians(( (player_.fov * -0.5) + (counter)))
+      deg = (get-angle(player_) + num-degrees-radians((player_.fov * -0.5) + counter))
       res = step_rays(deg, rounded-pos).get-now(1)
       scale_ = 1 #+ (num-abs(counter - (max * 0.5)) / (max * 100))
       distance = (get-distance(get-position(player_), res)) * scale_
@@ -265,12 +265,12 @@ fun move-forward(x, key):
     end
   else if string-equal(key, "left"):
     block:
-      increment-angle(player, -0.1)
+      increment-angle(player, -0.05)
       x
     end
   else if string-equal(key, "right"):
     block:
-      increment-angle(player, 0.1)
+      increment-angle(player, 0.05)
       x
     end
   else:
