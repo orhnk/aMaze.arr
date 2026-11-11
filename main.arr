@@ -6,9 +6,13 @@ WALL = "#"
 START = "S"
 constants  = " #SX"
 FIELD_SIZE = 20
+FOV = 90
 
 SCREEN_WIDTH = 900
 SCREEN_HEIGHT = 600
+
+PLAYER_SPEED = 3
+TURN_SPEED = 0.3
 
 
 DIR_UP    = 0
@@ -19,8 +23,6 @@ DIR_LEFT  = 270
 RAY_COUNT = 90
 RECT_HEIGHT = SCREEN_HEIGHT * 0.7
 
-
-debug_colors = [array: "gray", "blue", "orange", "red"]
 
 maze_map = [array:
   "#################",
@@ -63,71 +65,6 @@ end
 
 
 
-fun set-angle(p, angle :: Number):
-  p.angle.set-now(0, angle) 
-end
-fun set-position-x(p, x :: Number):
-  p.position.set-now(0, point-xy(x, p.position.get-now(0).y)) 
-end
-fun set-position-y(p, y :: Number):
-  p.position.set-now(0, point-xy(p.position.get-now(0).x, y)) 
-end
-fun set-position(p, pos :: Point):
-  if (pos.x < (WIDTH - 1)) and (pos.x >= 0) and (pos.y >= 0) and (pos.y < (HEIGHT - 1)):
-    
-    p.position.set-now(0, pos) 
-  else:
-    nothing
-  end
-end
-
-fun get-angle(p) -> Number:
-  p.angle.get-now(0)
-end
-fun get-position-x(p) -> Number:
-  p.position.get-now(0).x
-end
-fun get-position-y(p) -> Number:
-  p.position.get-now(0).y 
-end
-fun get-position(p) -> Point:
-  p.position.get-now(0) 
-end
-
-
-
-fun increment-position-x(p, inc :: Number):
-  x = get-position-x(p)
-  if ((x + inc) <= (WIDTH - 1)) and ((x + inc) >= 0):
-    set-position-x(p, x + inc)
-  else:
-    nothing
-  end 
-end
-
-fun increment-position-y(p, inc :: Number):
-  y = get-position-y(p)
-  if ((y + inc) <= (HEIGHT - 1)) and ((y + inc) >= 0):
-    set-position-y(p, y + inc)
-  else:
-    nothing
-  end 
-end
-
-fun angled_increment-position(p, inc :: Number):
-  block:
-    increment-y = inc * (num-cos(get-angle(p) * PI))
-    increment-x = inc * (num-sin(get-angle(p) * PI))
-    increment-position-x(p, increment-x)
-    increment-position-y(p, increment-y)
-  end
-end
-fun increment-angle(p, inc :: Number):
-  angle = get-angle(p)
-  set-angle(p, angle + inc)
-end
-
-
 fun fill-game(arr, map_arr, Width:: Number, Height:: Number) -> Point:
   block:
   var ret = point-xy(0,0)
@@ -155,20 +92,88 @@ fun init-game-array(arr, Width:: Number, Height:: Number):
 end
 
 
+data Player:
+  | player(
+      ref position :: Array<Point>,
+      ref angle :: Array<Number>,
+      ref fov :: Number
+  )
+sharing:
+  method set-angle(self, angle :: Number):
+    self!angle!set-now(0, angle) 
+  end,
+  method set-position-x(self, x :: Number):
+    self!position!set-now(0, point-xy(x, self!position.get-now(0).y)) 
+  end,
+  method set-position-y(self, y :: Number):
+    self!position!set-now(0, point-xy(self!position.get-now(0).x, y)) 
+  end,
+  method set-position(self, pos :: Point):
+    if (pos.x < (WIDTH - 1)) and (pos.x >= 0) and (pos.y >= 0) and (pos.y < (HEIGHT - 1)):
+    
+      self!position.set-now(0, pos) 
+    else:
+      nothing
+    end
+  end,
 
-var player = {
-  position: [array: point-xy(5,3)],
-  angle:    [array: DIR_RIGHT],
-  fov: 90
-}
+  method get-angle(self) -> Number:
+    self!angle.get-now(0)
+  end,
+  method get-position-x(self) -> Number:
+    self!position.get-now(0).x
+  end,
+  method get-position-y(self) -> Number:
+    self!position.get-now(0).y 
+  end,
+  method get-position(self) -> Point:
+    self!position.get-now(0) 
+  end,
 
 
 
+  method increment-position-x(self, inc :: Number):
+    x = self.get-position-x()
+    if ((x + inc) <= (WIDTH - 1)) and ((x + inc) >= 0):
+      self.set-position-x(x + inc)
+    else:
+      nothing
+    end
+  end,
+
+  method increment-position-y(self, inc :: Number):
+    y = self.get-position-y()
+    if ((y + inc) <= (HEIGHT - 1)) and ((y + inc) >= 0):
+      self.set-position-y(y + inc)
+    else:
+      nothing
+    end
+  end,
+
+  method angled_increment-position(self, inc :: Number):
+    block:
+      increment-y = inc * (num-cos(self.get-angle() * PI))
+      increment-x = inc * (num-sin(self.get-angle() * PI))
+      self.increment-position-x(increment-x)
+      self.increment-position-y(increment-y)
+    end
+  end,
+  method increment-angle(self, inc :: Number):
+    angle = self.get-angle()
+    self.set-angle(angle + inc)
+  end
+end
+
+var p = player(
+  [array: point-xy(5,3)],
+  [array: DIR_RIGHT],
+  FOV
+)
 
 game_field = array-of(array-of(0, WIDTH), (HEIGHT))
 init-game-array(game_field, WIDTH, HEIGHT)
 start_pos = fill-game(game_field, maze_map, WIDTH, HEIGHT)
-set-position(player, start_pos)
+p.set-position(start_pos)
 
 fun num-square(n :: Number) -> Number:
   n * n
@@ -216,33 +221,29 @@ end
 
 fun draw-wall(distance, wall_color :: C.Color) -> Image:
   rectangle(SCREEN_WIDTH / RAY_COUNT,  RECT_HEIGHT * (1 / num-max(distance + 1, 1)), "solid" , wall_color)
-  
-  
-
-
 end
   
 #for loops are for noobs
 
-fun iter(counter :: Number, max :: Number, return_, player_) -> Image:
+fun iter(counter :: Number, max :: Number, return_, p_) -> Image:
   
   if counter >= max:
     return_
   else:
     block:
-      rounded-pos = point-xy(num-round(get-position-x(player_)), num-round(get-position-y(player_)))
-      deg = (get-angle(player_) + num-degrees-radians((player_.fov * -0.5) + counter))
+      rounded-pos = point-xy(num-round(p_.get-position-x()), num-round(p_.get-position-y()))
+      deg = (p_.get-angle() + num-degrees-radians((-45) + counter))
       res = step_rays(deg, rounded-pos).get-now(1)
       scale_ = 1 #+ (num-abs(counter - (max * 0.5)) / (max * 100))
-      distance = (get-distance(get-position(player_), res)) * scale_
-      base_color = 255 - (distance * 10)
+      distance = (get-distance(p_.get-position(), res)) * scale_
+      base_color = 255 - (distance * 11)
       var ret = draw-wall(distance, C.color(
-        base_color,
+        255,
         base_color,
         base_color,
         1
       ))
-      beside(ret, iter(counter + 1, max, ret, player))
+      beside(ret, iter(counter + 1, max, ret, p))
       
     end
   end
@@ -253,26 +254,25 @@ end
 fun move-forward(x, key):
   if string-equal(key, "up"):
     block:
-      angled_increment-position(player, 0.02)
+      p.angled_increment-position(0.02 * PLAYER_SPEED)
       x
     end
   else if string-equal(key, "down"):
     block:
-      angled_increment-position(player, -0.02)
+      p.angled_increment-position(-0.02 * PLAYER_SPEED)
       x
     end
   else if string-equal(key, "left"):
     block:
-      increment-angle(player, -0.05)
+      p.increment-angle(-0.05 * TURN_SPEED)
       x
     end
   else if string-equal(key, "right"):
     block:
-      increment-angle(player, 0.05)
+      p.increment-angle(0.05 * TURN_SPEED)
       x
     end
   else:
-    
     x
   end
 end
@@ -280,17 +280,17 @@ end
 fun render(x):
   var target = rectangle(SCREEN_WIDTH, SCREEN_HEIGHT, "solid", "black")
   
-  place-image(iter(0, RAY_COUNT, target, player),SCREEN_WIDTH * 0.5,SCREEN_HEIGHT * 0.5,target)
+  place-image(iter(0, RAY_COUNT, target, p), SCREEN_WIDTH * 0.5 ,SCREEN_HEIGHT * 0.5 ,target)
 end
 fun increment(x): x + 1 end
 
 #TODO: add DT and make the array accesses check and clamp bounds, make the position floating point but round it on array access for the map (movement almost works)
 
 main = reactor:
-  seconds-per-tick: 0.016,
+  # seconds-per-tick: 0.016,
   title: "Count by 10",
   on-tick: increment,
-    init: 0,
+  init: 0,
   on-key: move-forward,
   to-draw: render
 end
