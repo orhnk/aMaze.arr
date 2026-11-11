@@ -16,7 +16,7 @@ DIR_RIGHT = 90
 DIR_DOWN  = 180
 DIR_LEFT  = 270
 
-RAY_COUNT = 32
+RAY_COUNT = 90
 RECT_HEIGHT = SCREEN_HEIGHT * 0.7
 
 
@@ -26,9 +26,9 @@ maze_map = [array:
   "########",
   "#    X #",
   "# ######",
-  "#   #  #",
-  "#  S   #",
-  "#    ###",
+  "# ###  #",
+  "#  S#  #",
+  "# ######",
   "#   ## #",
   "#      #",
   "########"
@@ -159,7 +159,7 @@ end
 var player = {
   position: [array: point-xy(5,3)],
   angle:    [array: DIR_RIGHT],
-  fov: 90
+  fov: 60
 }
 
 
@@ -231,9 +231,9 @@ fun iter(counter :: Number, max :: Number, return_, player_) -> Image:
   else:
     block:
       rounded-pos = point-xy(num-round(get-position-x(player_)), num-round(get-position-y(player_)))
-      deg = (get-angle(player_) - (((player_.fov * 0.5) + counter) / max))
+      deg = (get-angle(player_) + num-degrees-radians(( (player_.fov * -0.5) + (counter)))
       res = step_rays(deg, rounded-pos).get-now(1)
-      scale_ = 1 + (num-abs(counter - (max * 0.5)) / (max * 100))
+      scale_ = 1 #+ (num-abs(counter - (max * 0.5)) / (max * 100))
       distance = (get-distance(get-position(player_), res)) * scale_
       var ret = if distance > 5:
         draw-wall(distance, "gray")
@@ -265,12 +265,12 @@ fun move-forward(x, key):
     end
   else if string-equal(key, "left"):
     block:
-      increment-angle(player, 0.1)
+      increment-angle(player, -0.1)
       x
     end
   else if string-equal(key, "right"):
     block:
-      increment-angle(player, -0.1)
+      increment-angle(player, 0.1)
       x
     end
   else:
