@@ -25,11 +25,11 @@ debug_colors = [array: "gray", "blue", "orange", "red"]
 maze_map = [array:
   "########",
   "#    X #",
-  "#      #",
+  "# ######",
   "#   #  #",
   "#  S   #",
-  "#      #",
-  "#      #",
+  "#    ###",
+  "#   ## #",
   "#      #",
   "########"
 ]
@@ -106,7 +106,7 @@ fun increment-position-x(p, inc :: Number):
 end
 
 fun increment-position-y(p, inc :: Number):
-  y = get-position-x(p)
+  y = get-position-y(p)
   if ((y + inc) <= (HEIGHT - 1)) and ((y + inc) >= 0):
     set-position-y(p, y + inc)
   else:
@@ -116,7 +116,7 @@ end
 
 fun angled_increment-position(p, inc :: Number):
   block:
-    increment-y = inc * (num-cos((num-degrees-radians(DIR_DOWN)) + (get-angle(p) * PI)))
+    increment-y = inc * (num-cos(get-angle(p) * PI))
     increment-x = inc * (num-sin(get-angle(p) * PI))
     increment-position-x(p, increment-x)
     increment-position-y(p, increment-y)
@@ -231,7 +231,7 @@ fun iter(counter :: Number, max :: Number, return_, player_) -> Image:
   else:
     block:
       rounded-pos = point-xy(num-round(get-position-x(player_)), num-round(get-position-y(player_)))
-      deg = ((get-angle(player_) - (player_.fov * 0.5)) + (counter / max))
+      deg = (get-angle(player_) - (((player_.fov * 0.5) + counter) / max))
       res = step_rays(deg, rounded-pos).get-now(1)
       scale_ = 1 + (num-abs(counter - (max * 0.5)) / (max * 100))
       distance = (get-distance(get-position(player_), res)) * scale_
@@ -265,12 +265,12 @@ fun move-forward(x, key):
     end
   else if string-equal(key, "left"):
     block:
-      increment-angle(player, -0.1)
+      increment-angle(player, 0.1)
       x
     end
   else if string-equal(key, "right"):
     block:
-      increment-angle(player, 0.1)
+      increment-angle(player, -0.1)
       x
     end
   else:
