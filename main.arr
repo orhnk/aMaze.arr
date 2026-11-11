@@ -1,5 +1,5 @@
-use context dcic2024
 include reactors
+import color as C
 
 
 WALL = "#"
@@ -23,15 +23,15 @@ RECT_HEIGHT = SCREEN_HEIGHT * 0.7
 debug_colors = [array: "gray", "blue", "orange", "red"]
 
 maze_map = [array:
-  "########",
-  "#    X #",
-  "# ######",
-  "# ###  #",
-  "#  S#  #",
-  "# ######",
-  "#   ## #",
-  "#      #",
-  "########"
+  "#################",
+  "#    X          #",
+  "#          ######",
+  "#          ###  #",
+  "#    S       #  #",
+  "#          ######",
+  "#            ## #",
+  "#               #",
+  "#################"
 ]
 
 
@@ -214,8 +214,8 @@ end
 
 
 
-fun draw-wall(distance, color :: String) -> Image:
-  rectangle(SCREEN_WIDTH / RAY_COUNT,  RECT_HEIGHT * (1 / num-max(distance + 1, 1)), "solid" , color)
+fun draw-wall(distance, wall_color :: C.Color) -> Image:
+  rectangle(SCREEN_WIDTH / RAY_COUNT,  RECT_HEIGHT * (1 / num-max(distance + 1, 1)), "solid" , wall_color)
   
   
 
@@ -235,15 +235,13 @@ fun iter(counter :: Number, max :: Number, return_, player_) -> Image:
       res = step_rays(deg, rounded-pos).get-now(1)
       scale_ = 1 #+ (num-abs(counter - (max * 0.5)) / (max * 100))
       distance = (get-distance(get-position(player_), res)) * scale_
-      var ret = if distance > 5:
-        draw-wall(distance, "gray")
-      else if distance > 2.5:
-        draw-wall(distance, "blue")
-        else if distance > 1:
-        draw-wall(distance, "red")
-      else:
-        draw-wall(distance, "green")
-      end
+      base_color = 255 - (distance * 10)
+      var ret = draw-wall(distance, C.color(
+        base_color,
+        base_color,
+        base_color,
+        1
+      ))
       beside(ret, iter(counter + 1, max, ret, player))
       
     end
@@ -298,4 +296,4 @@ main = reactor:
 end
 
 
- interact(main)
+interact(main)
