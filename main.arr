@@ -1,3 +1,4 @@
+
 include reactors
 import color as C
 
@@ -27,12 +28,12 @@ RECT_HEIGHT = SCREEN_HEIGHT * 0.7
 maze_map = [array:
   "#################",
   "#    X          #",
-  "#          ######",
-  "#          ###  #",
-  "#    S       #  #",
-  "#          ######",
-  "#            ## #",
+  "# #    S      # #",
+  "##         ###  #",
   "#               #",
+  "#  #   #     ## #",
+  "# #    #   ##   #",
+  "##     #        #",
   "#################"
 ]
 
@@ -41,14 +42,29 @@ WIDTH  = string-length(maze_map.get-now(0))
 HEIGHT = array-length(maze_map)
 #WARNING: this assumes a rectangular map : )
 #this will definitely not bite in the future, especially because I don't implement any tests : >
-fun num-degrees-radians(degrees :: Number) -> Number:
-  (degrees ) * (1 / 180)
+
+# data Direction:
+#   | forward
+#   | backward
+#   | right
+#   | left
+# end
+
+# data Action:
+#   | walk(d :: Direction)
+#   | shoot
+#   | interact
+# end
+
+fun num-degrees-radians(d :: Number) -> Number:
+  (d) * (1 / 180)
   #Usage: 
   #UP:= 0
   #RIGHT:=90
   #DOWN:=180
   #LEFT:=270
 end
+
 fun map-block-as-index(char :: String) -> Number:
   if string-length(char) <> 1:
     raise("character length not 1!")
@@ -61,28 +77,23 @@ fun map-block-as-index(char :: String) -> Number:
   end
 end
 
-
-
-
-
-fun fill-game(arr, map_arr, Width:: Number, Height:: Number) -> Point:
+fun fill-game(calculated_map_buf, map_arr, Width:: Number, Height:: Number) -> Point:
   block:
-  var ret = point-xy(0,0)
-  for each(i from range(0, Height)):
-    for each(j from range(0, Width)):
-      block:
-      strg  = map_arr.get-now(i)
-      char = string-char-at(strg, j)
-          when string-equal(START, char):
+    var ret = point-xy(0,0)
+    for each(i from range(0, Height)):
+      for each(j from range(0, Width)):
+        block:
+          maze_map_row  = map_arr.get-now(i)
+          maze_map_block = string-char-at(maze_map_row, j)
+          when string-equal(START, maze_map_block):
             ret := point-xy(j, i) 
           end
-      
-      arr.get-now(i).set-now(j, map-block-as-index(char))
+          calculated_map_buf.get-now(i).set-now(j, map-block-as-index(maze_map_block))
+        end
       end
     end
+    ret
   end
-  ret
-end
 end
 
 fun init-game-array(arr, Width:: Number, Height:: Number):
@@ -244,7 +255,6 @@ fun iter(counter :: Number, max :: Number, return_, p_) -> Image:
         1
       ))
       beside(ret, iter(counter + 1, max, ret, p))
-      
     end
   end
 end
