@@ -213,8 +213,8 @@ fun step_rays(angle :: Number, position :: Point) -> Array:
   
   ret = game_field.get-now(y).get-now(x)
   if ret <> map-block-as-index(WALL):
-      increment-y = (num-cos(angle * PI)) * 0.1
-      increment-x = (num-sin(angle * PI)) * 0.1
+      increment-y = (num-cos(angle * PI)) * 0.01
+      increment-x = (num-sin(angle * PI)) * 0.01
       new_pos = point-xy(position.x + increment-x, position.y + increment-y) 
     
     step_rays(angle, new_pos)
