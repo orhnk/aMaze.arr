@@ -16,7 +16,7 @@ DIR_RIGHT = 90
 DIR_DOWN  = 180
 DIR_LEFT  = 270
 
-RAY_COUNT = 90
+RAY_COUNT = 32
 RECT_HEIGHT = SCREEN_HEIGHT * 0.7
 
 
@@ -26,8 +26,8 @@ maze_map = [array:
   "########",
   "#    X #",
   "# ######",
-  "# ###  #",
-  "#  S#  #",
+  "# ######",
+  "#     S#",
   "# ######",
   "#   ## #",
   "#      #",
@@ -96,30 +96,44 @@ end
 
 
 
-fun increment-position-x(p, inc :: Number):
+fun increment-position-x(p, inc :: Number, game_field):
   x = get-position-x(p)
-  if ((x + inc) <= (WIDTH - 1)) and ((x + inc) >= 0):
-    set-position-x(p, x + inc)
+  if ((x + inc) <= (HEIGHT - 1)) and ((x + inc) >= 0):
+    rn_x = num-round(x + inc)
+    rn_y = num-round(get-position-y(p))
+    char_ = game_field.get-now(rn_y).get-now(rn_x)
+    if char_ <> map-block-as-index("#"):
+      set-position-x(p, x + inc)
+    else:
+      nothing
+    end
   else:
     nothing
-  end 
+  end
 end
 
-fun increment-position-y(p, inc :: Number):
+fun increment-position-y(p, inc :: Number, game_field):
   y = get-position-y(p)
   if ((y + inc) <= (HEIGHT - 1)) and ((y + inc) >= 0):
-    set-position-y(p, y + inc)
+    rn_y = num-round(y + inc)
+    rn_x = num-round(get-position-x(p))
+    char_ = game_field.get-now(rn_y).get-now(rn_x)
+    if char_ <> map-block-as-index("#"):
+        set-position-y(p, y + inc)
+    else:
+      nothing
+    end
   else:
     nothing
   end 
 end
 
-fun angled_increment-position(p, inc :: Number):
+fun angled_increment-position(p, inc :: Number, gamefield):
   block:
     increment-y = inc * (num-cos(get-angle(p) * PI))
     increment-x = inc * (num-sin(get-angle(p) * PI))
-    increment-position-x(p, increment-x)
-    increment-position-y(p, increment-y)
+    increment-position-x(p, increment-x, gamefield)
+    increment-position-y(p, increment-y, gamefield)
   end
 end
 fun increment-angle(p, inc :: Number):
@@ -184,23 +198,23 @@ fun step_rays(angle :: Number, position :: Point) -> Array:
   var x = num-round(position.x)
   var y = num-round(position.y)
   
-    if x < 0:
+    if x <= 0:
     x := 0
-  else if x > (WIDTH  - 1):
+    else if x >= (WIDTH - 1):
     x := (WIDTH  - 1)
     else: nothing
   end
-  if y < 0:
+    if y <= 0:
     y := 0
-  else if y > (HEIGHT  - 1):
+    else if y >= (HEIGHT  - 1):
     y := (HEIGHT  - 1)
     else: nothing
   end
   
   ret = game_field.get-now(y).get-now(x)
   if ret <> map-block-as-index(WALL):
-    increment-y = (num-cos(angle * PI))
-    increment-x = (num-sin(angle * PI))
+      increment-y = (num-cos(angle * PI)) * 0.1
+      increment-x = (num-sin(angle * PI)) * 0.1
       new_pos = point-xy(position.x + increment-x, position.y + increment-y) 
     
     step_rays(angle, new_pos)
@@ -255,22 +269,22 @@ end
 fun move-forward(x, key):
   if string-equal(key, "up"):
     block:
-      angled_increment-position(player, 0.02)
+      angled_increment-position(player, 0.05, game_field)
       x
     end
   else if string-equal(key, "down"):
     block:
-      angled_increment-position(player, -0.02)
+      angled_increment-position(player, -0.05, game_field)
       x
     end
   else if string-equal(key, "left"):
     block:
-      increment-angle(player, -0.05)
+      increment-angle(player, -0.005)
       x
     end
   else if string-equal(key, "right"):
     block:
-      increment-angle(player, 0.05)
+      increment-angle(player, 0.005)
       x
     end
   else:
@@ -289,8 +303,8 @@ fun increment(x): x + 1 end
 #TODO: add DT and make the array accesses check and clamp bounds, make the position floating point but round it on array access for the map (movement almost works)
 
 main = reactor:
-  seconds-per-tick: 0.016,
-  title: "Count by 10",
+  seconds-per-tick: 0.0006,
+  title: "raycaster",
   on-tick: increment,
     init: 0,
   on-key: move-forward,
